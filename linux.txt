@@ -1,0 +1,8 @@
+make change and add to local repository:
+    git add . 
+commit to local repository
+    git commit -m "message"
+check modification from a file only from working directory
+    git diff <fileName> or leave it empty to check all modified files.
+check modification compare stage with repository
+    git diff --staged 
