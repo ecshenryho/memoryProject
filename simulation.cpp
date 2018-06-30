@@ -9,12 +9,11 @@ using namespace std;
 
 class Process {
 public:
-	Process(int pid_, int a_time, int run_time_,int num_block,
+	Process(int pid_, int a_time, int run_time_,
 		const vector<int>& memory_needed) {
 		pid = pid_;
 		arrival_time = a_time;
 		run_time = run_time_;
-		number_of_block=num_block;
 		memory_chunks = memory_needed;
 	}
 
@@ -43,7 +42,7 @@ private:
 	int pid,
 		arrival_time,
 		run_time,
-		completion_time,number_of_block;
+		completion_time;
 	vector<int> memory_chunks;
 	vector<int>pages_used;
 	friend class Simulation;
@@ -53,7 +52,7 @@ class Simulation {
 public:
 	Simulation(int mem_size, int size) {
 		capacity = mem_size;
-		memory_map = vector<int>(-1, free_pages);
+		memory_map = vector<int>(free_pages, -1);
 		if (size == 1) page_size = 100;
 		else if (size == 2) page_size = 200;
 		else page_size = 400;
@@ -66,31 +65,31 @@ public:
 			cout << "Can not open the file: " << path << endl;
 			return false;
 		}
-		int number_Of_Process = 0;
-		file >> number_Of_Process;
-		cout << "Number of process: " << number_Of_Process << endl;
 
-		for (int i = 0; i < number_Of_Process; i++)
-		{
-			int k=0, pid=0, arrival_time=0, complete_time=0,number_of_block=0;
-			vector<int> memory_needed;
-			int block_size=0;
+		int k, pid, a_time, run_time, count, n, n_piece, c;
+		vector<int> memory_needed;
+
+		file >> count;
+		for (int i = 0; i < count; i++) {
 			file >> pid;
-			file >> arrival_time;
-			file >> complete_time;
-			file >> number_of_block;
-			for (int i = 0; i <number_of_block; i++)
-			{
-				file >> block_size;
-				memory_needed.push_back(block_size);
+			file >> a_time;
+			file >> run_time;
+			file >> n_piece;
+
+			c = 0;
+			while (c < n_piece) {
+				file >> n;
+				memory_needed.push_back(n);
+				c++;
 			}
-			process_list.push_back(Process(pid,arrival_time,complete_time,number_of_block,memory_needed));
-	
+
+			process_list.push_back(Process(pid, a_time, run_time, memory_needed));
 			k = process_list.size() - 1; //Hash of PID
 			pair<bool, int> temp(true, k);
 			list<pair<bool, int>> a = { temp };
-			pair<map<int, list<pair<bool, int>>>::iterator, bool> mem 
-				= events.insert(pair<int, list<pair<bool, int>>>(arrival_time, a));
+
+			pair<map<int, list<pair<bool, int>>>::iterator, bool> mem
+				= events.insert(pair<int, list<pair<bool, int>>>(a_time, a));
 			if (!mem.second) // returns false if eleme already excists
 				mem.first->second.push_back(temp);
 		}
@@ -101,7 +100,7 @@ public:
 	}
 
 	void MM_add(int k) {
-		cout << "MM moves Process " << k << "to memory" << endl;
+		cout << "MM moves Process " << k << " to memory" << endl;
 		size_t size = process_list[k].pages_needed(page_size);
 		free_pages -= size;
 		int i = 0;
@@ -126,15 +125,15 @@ public:
 		print_mem();
 	}
 	void enqueue(int k) {
-		cout << "Process" << k << " arrives" << endl;
+		cout << "Process " << k << " arrives" << endl;
 		queue.push_back(k);
 		print_queue();
 	}
 
 	void virtual_clock() {
 		int t = 0;
-		while (t <= 100000 || events.size() != 0) {
-			if (t == events.begin()->first) {//check if any events at time t
+		while (t <= 100000 && events.size() != 0) {
+			if (t == events.begin()->first) {//check if any events at time t // bug at 1700
 				cout << "t = " << t << ": ";
 				while (events.begin()->second.size() != 0) { // run through all events
 					pair<bool, int> action = events.begin()->second.front(); // pointer to first elem in list
@@ -150,9 +149,11 @@ public:
 			while (iter != queue.end()) {
 				if (process_list[*iter].pages_needed(page_size) <= free_pages) { //if enough space add to mem, if not check next
 					MM_add(*iter);
+					++iter;
 					queue.pop_front();
 				}
-				iter++;
+				else
+				++iter;
 			}
 			t += 100;
 		}
