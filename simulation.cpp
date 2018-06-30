@@ -9,11 +9,12 @@ using namespace std;
 
 class Process {
 public:
-	Process(int pid_, int a_time, int run_time_,
+	Process(int pid_, int a_time, int run_time_,int num_block,
 		const vector<int>& memory_needed) {
 		pid = pid_;
 		arrival_time = a_time;
 		run_time = run_time_;
+		number_of_block=num_block;
 		memory_chunks = memory_needed;
 	}
 
@@ -71,20 +72,19 @@ public:
 
 		for (int i = 0; i < number_Of_Process; i++)
 		{
-			Process new_process;
-			int k=0, pid=0, a_time=0, run_time=0;
+			int k=0, pid=0, arrival_time=0, complete_time=0,number_of_block;
 			vector<int> memory_needed;
 			int block_size=0;
-			file >> new_process.pid;
-			file >> new_process.arrival_time;
-			file >> new_process.completion_time;
-			file >> new_process.number_of_block;
+			file >> pid;
+			file >> arrival_time;
+			file >> completion_time;
+			file >> number_of_block;
 			for (int i = 0; i < new_process.number_of_block; i++)
 			{
 				file >> block_size;
 				memory_needed.push_back(block_size);
 			}
-			process_list.push_back(new_process);
+			process_list.push_back(Process(pid,arrival_time,complete_time,num_block,memory_needed));
 	
 			k = process_list.size() - 1; //Hash of PID
 			pair<bool, int> temp(true, k);
