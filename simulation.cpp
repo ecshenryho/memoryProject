@@ -65,15 +65,13 @@ public:
 			cout << "Can not open the file: " << path << endl;
 			return false;
 		}
-
 		int number_Of_Process = 0;
-		Process new_process;
-
 		file >> number_Of_Process;
 		cout << "Number of process: " << number_Of_Process << endl;
 
 		for (int i = 0; i < number_Of_Process; i++)
 		{
+			Process new_process;
 			int k=0, pid=0, a_time=0, run_time=0;
 			vector<int> memory_needed;
 			int block_size=0;
