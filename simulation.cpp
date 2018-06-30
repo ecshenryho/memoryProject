@@ -77,20 +77,20 @@ public:
 			int block_size=0;
 			file >> pid;
 			file >> arrival_time;
-			file >> completion_time;
+			file >> complete_time;
 			file >> number_of_block;
-			for (int i = 0; i < new_process.number_of_block; i++)
+			for (int i = 0; i <number_of_block; i++)
 			{
 				file >> block_size;
 				memory_needed.push_back(block_size);
 			}
-			process_list.push_back(Process(pid,arrival_time,complete_time,num_block,memory_needed));
+			process_list.push_back(Process(pid,arrival_time,complete_time,number_of_block,memory_needed));
 	
 			k = process_list.size() - 1; //Hash of PID
 			pair<bool, int> temp(true, k);
 			list<pair<bool, int>> a = { temp };
 			pair<map<int, list<pair<bool, int>>>::iterator, bool> mem 
-				= events.insert(pair<int, list<pair<bool, int>>>(a_time, a));
+				= events.insert(pair<int, list<pair<bool, int>>>(arrival_time, a));
 			if (!mem.second) // returns false if eleme already excists
 				mem.first->second.push_back(temp);
 		}
