@@ -1,13 +1,15 @@
 #include<iostream>
 #include<fstream>
+#include <string>
 #include<vector>
 #include<list>
 #include <map>
+#include <stack>
 using namespace std;
 
 class Process {
 public:
-	Process(int pid_, int a_time, int run_time_, 
+	Process(int pid_, int a_time, int run_time_,
 		const vector<int>& memory_needed) {
 		pid = pid_;
 		arrival_time = a_time;
@@ -30,7 +32,7 @@ public:
 
 	int total_memory() { // might not need
 		int sum = 0;
-		for (int i = 0; i < memory_chunks.size(); i++) 
+		for (int i = 0; i < memory_chunks.size(); i++)
 			sum += memory_chunks[i];
 		return sum;
 	}
@@ -46,36 +48,78 @@ private:
 	friend class Simulation;
 };
 
-class Simulation{
+class Simulation {
 public:
-    Simulation(int mem_size, int size){
-        capacity = mem_size;
-	memory_map = vector<int>(-1, free_pages);
-	if (size == 1) page_size = 100;
-	else if (size == 2) page_size = 200;
-	else page_size = 400;
-	free_pages = capacity / page_size;
-    }
+	Simulation(int mem_size, int size) {
+		capacity = mem_size;
+		memory_map = vector<int>(-1, free_pages);
+		if (size == 1) page_size = 100;
+		else if (size == 2) page_size = 200;
+		else page_size = 400;
+		free_pages = capacity / page_size;
+	}
 
 	bool read_file(const string& path) {
 		//if not open file
-		return false;
+		ifstream file(path);
+		if (!file.is_open()) {
+			cout << "Can not open the file: " << path << endl;
+			return false;
+		}
+
+		stack<int> allTokens; //store all the data from the in1.txt
+		string token;
+		while (file >> token) {
+			allTokens.push(stoi(token));	//before push token to stack, convert it from string to int
+		}
 
 		int k, pid, a_time, run_time; //all you need to do is read process info into these vars(except k and iter) and loop
 		vector<int> memory_needed;
-		map<int, list<pair<bool, int>>>::iterator iter;
+		
+		k = allTokens.top();	//k is the number of all the processes
+		allTokens.pop();
 
-		//while reading process from file...
-		process_list.push_back(Process(pid, a_time, run_time, memory_needed));
+		int count = 0;	//when the count=3, it's the number of the pieces
+		while (count < 4) {
+			pid = allTokens.top();	//count=1
+			allTokens.pop();
+
+			count++;	//count =2;
+			a_time = allTokens.top();
+			allTokens.pop();
+
+			count++;	//count=3
+			run_time = allTokens.top();
+			allTokens.pop();
+
+			int n_piece = allTokens.top();	//count=4
+			allTokens.pop();	//we don't need store the n_piece in vector memory_needed
+			int c = 0;	
+			while (c < n_piece) {
+				int temp = allTokens.top();
+				memory_needed.push_back(temp);
+				allTokens.pop();
+				c++;
+			}
+
+			process_list.push_back(Process(pid, a_time, run_time, memory_needed));
+			count = 0;
+		}
+
+		map<int, list<pair<bool, int>>>::iterator iter;
+				
 		k = process_list.size() - 1; //Hash of PID
 		iter = events.find(a_time);
 		if (iter == events.end())
 			events.insert(a_time, (true, k)); // when testing make sure this is correct
 		else
 			iter->second.push_back(pair<bool, int>(true, k));
-    }
-    
-    void MM_add(int k){
+
+		file.close();
+		file.clear();
+	}
+
+	void MM_add(int k) {
 		cout << "MM moves Process " << k << "to memory" << endl;
 		size_t size = process_list[k].pages_needed(page_size);
 		free_pages -= size;
@@ -91,9 +135,9 @@ public:
 
 		print_queue();
 		print_mem();
-    }
+	}
 	void MM_remove(int k) {
-		cout << "Process " << k <<" completes" << endl;
+		cout << "Process " << k << " completes" << endl;
 		size_t size = process_list[k].memory_chunks.size();
 		for (size_t i = 0; i < size; i++)
 			memory_map[process_list[k].memory_chunks[i]] = -1;
@@ -106,9 +150,9 @@ public:
 		print_queue();
 	}
 
-    void virtual_clock(){
-        int t = 0;
-        while(t <= 100000 || events.size() != 0){
+	void virtual_clock() {
+		int t = 0;
+		while (t <= 100000 || events.size() != 0) {
 			if (t == events.begin()->first) {//check if any events at time t
 				cout << "t = " << t << ": ";
 				while (events.begin()->second.size() != 0) { // run through all events
@@ -129,9 +173,9 @@ public:
 				}
 				iter++;
 			}
-            t += 100;
-        }
-    }
+			t += 100;
+		}
+	}
 
 	void print_mem() {
 		size_t mem_size = memory_map.size();
@@ -160,7 +204,7 @@ public:
 			cout << queue[i] << " ";
 		cout << "]" << endl;
 	}
-	
+
 	double turn_around_time() {
 		double sum = 0;
 		size_t size = process_list.size();
@@ -182,20 +226,20 @@ private:
 	int page_size;
 };
 
-int main(){
-    int mem_size, page_size;
-    cout << "Enter memory size: ";
-    cin >> mem_size;
-    cout << endl << "Enter page size: (1:100, 2:200, 3:400)";
-    cin >> page_size;
+int main() {
+	int mem_size, page_size;
+	cout << "Enter memory size: ";
+	cin >> mem_size;
+	cout << endl << "Enter page size: (1:100, 2:200, 3:400)";
+	cin >> page_size;
 	if (page_size < 1 || page_size > 3)
 		cout << "Out of bounds"; // DO EXCEPTION LATER;
-    
-    Simulation sim(mem_size, page_size);
+
+	Simulation sim(mem_size, page_size);
 	if (!sim.read_file("in1.txt"))
 		cout << "Cant read file"; // DO EXCEPTION LATER;
 	sim.virtual_clock();
 	sim.turn_around_time();
 
-    return 0;
+	return 0;
 }
