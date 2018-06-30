@@ -42,7 +42,7 @@ private:
 	int pid,
 		arrival_time,
 		run_time,
-		completion_time;
+		completion_time,number_of_block;
 	vector<int> memory_chunks;
 	vector<int>pages_used;
 	friend class Simulation;
@@ -66,39 +66,28 @@ public:
 			return false;
 		}
 
-		stack<int> allTokens; //store all the data from the in1.txt
-		string token;
-		while (file >> token) {
-			allTokens.push(stoi(token));	//before push token to stack, convert it from string to int
-		}
+		int number_Of_Process = 0;
+		Process new_process;
 
-		int i = 0, k, pid, a_time, run_time, count; //all you need to do is read process info into these vars(except k and iter) and loop
-		vector<int> memory_needed;
-		
-		count = allTokens.top();	//k is the number of all the processes
-		allTokens.pop();
-		
-		while (i < count) {
-			pid = allTokens.top();
-			allTokens.pop();
+		file >> number_Of_Process;
+		cout << "Number of process: " << number_Of_Process << endl;
 
-			a_time = allTokens.top();
-			allTokens.pop();
-
-			run_time = allTokens.top();
-			allTokens.pop();
-
-			int n_piece = allTokens.top();	//count=4
-			allTokens.pop();	//we don't need store the n_piece in vector memory_needed
-			int c = 0;	
-			while (c < n_piece) {
-				int temp = allTokens.top();
-				memory_needed.push_back(temp);
-				allTokens.pop();
-				c++;
+		for (int i = 0; i < number_Of_Process; i++)
+		{
+			int k=0, pid=0, a_time=0, run_time=0;
+			vector<int> memory_needed;
+			int block_size=0;
+			file >> new_process.pid;
+			file >> new_process.arrival_time;
+			file >> new_process.completion_time;
+			file >> new_process.number_of_block;
+			for (int i = 0; i < new_process.number_of_block; i++)
+			{
+				file >> block_size;
+				memory_needed.push_back(block_size);
 			}
-
 			process_list.push_back(Process(pid, a_time, run_time, memory_needed));
+	
 			k = process_list.size() - 1; //Hash of PID
 			pair<bool, int> temp(true, k);
 			list<pair<bool, int>> a = { temp };
@@ -106,7 +95,6 @@ public:
 				= events.insert(pair<int, list<pair<bool, int>>>(a_time, a));
 			if (!mem.second) // returns false if eleme already excists
 				mem.first->second.push_back(temp);
-			i++;
 		}
 
 		file.close();
