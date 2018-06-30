@@ -72,7 +72,7 @@ public:
 
 		for (int i = 0; i < number_Of_Process; i++)
 		{
-			int k=0, pid=0, arrival_time=0, complete_time=0,number_of_block;
+			int k=0, pid=0, arrival_time=0, complete_time=0,number_of_block=0;
 			vector<int> memory_needed;
 			int block_size=0;
 			file >> pid;
