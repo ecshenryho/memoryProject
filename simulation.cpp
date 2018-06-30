@@ -100,13 +100,12 @@ public:
 
 			process_list.push_back(Process(pid, a_time, run_time, memory_needed));
 			k = process_list.size() - 1; //Hash of PID
-			
-			list<pair<bool, int>> a(pair<bool, int>(true, k));
-			pair<map<int, list<pair<bool, int>>>::iterator, bool> b 
+			pair<bool, int> temp(true, k);
+			list<pair<bool, int>> a = { temp };
+			pair<map<int, list<pair<bool, int>>>::iterator, bool> mem 
 				= events.insert(pair<int, list<pair<bool, int>>>(a_time, a));
-			if 
-				iter->second.push_back(temp);
-
+			if (!mem.second) // returns false if eleme already excists
+				mem.first->second.push_back(temp);
 			i++;
 		}
 
