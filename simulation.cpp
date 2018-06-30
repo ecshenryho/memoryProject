@@ -19,7 +19,7 @@ public:
 
 	int pages_needed(int page_size) {
 		int sum = 0;
-		for (int i = 0; i < memory_chunks.size(); i++) {
+		for (size_t i = 0; i < memory_chunks.size(); i++) {
 			sum += memory_chunks[i] % page_size;
 			if (memory_chunks[i] % page_size != 0) sum++;
 		}
@@ -32,7 +32,7 @@ public:
 
 	int total_memory() { // might not need
 		int sum = 0;
-		for (int i = 0; i < memory_chunks.size(); i++)
+		for (size_t i = 0; i < memory_chunks.size(); i++)
 			sum += memory_chunks[i];
 		return sum;
 	}
@@ -60,7 +60,6 @@ public:
 	}
 
 	bool read_file(const string& path) {
-		//if not open file
 		ifstream file(path);
 		if (!file.is_open()) {
 			cout << "Can not open the file: " << path << endl;
@@ -73,22 +72,19 @@ public:
 			allTokens.push(stoi(token));	//before push token to stack, convert it from string to int
 		}
 
-		int k, pid, a_time, run_time; //all you need to do is read process info into these vars(except k and iter) and loop
+		int i = 0, k, pid, a_time, run_time, count; //all you need to do is read process info into these vars(except k and iter) and loop
 		vector<int> memory_needed;
 		
-		k = allTokens.top();	//k is the number of all the processes
+		count = allTokens.top();	//k is the number of all the processes
 		allTokens.pop();
-
-		int count = 0;	//when the count=3, it's the number of the pieces
-		while (count < 4) {
-			pid = allTokens.top();	//count=1
+		
+		while (i < count) {
+			pid = allTokens.top();
 			allTokens.pop();
 
-			count++;	//count =2;
 			a_time = allTokens.top();
 			allTokens.pop();
 
-			count++;	//count=3
 			run_time = allTokens.top();
 			allTokens.pop();
 
@@ -103,20 +99,20 @@ public:
 			}
 
 			process_list.push_back(Process(pid, a_time, run_time, memory_needed));
-			count = 0;
-		}
+			k = process_list.size() - 1; //Hash of PID
+			
+			list<pair<bool, int>> a(pair<bool, int>(true, k));
+			pair<map<int, list<pair<bool, int>>>::iterator, bool> b 
+				= events.insert(pair<int, list<pair<bool, int>>>(a_time, a));
+			if 
+				iter->second.push_back(temp);
 
-		map<int, list<pair<bool, int>>>::iterator iter;
-				
-		k = process_list.size() - 1; //Hash of PID
-		iter = events.find(a_time);
-		if (iter == events.end())
-			events.insert(a_time, (true, k)); // when testing make sure this is correct
-		else
-			iter->second.push_back(pair<bool, int>(true, k));
+			i++;
+		}
 
 		file.close();
 		file.clear();
+		return true;
 	}
 
 	void MM_add(int k) {
@@ -199,9 +195,14 @@ public:
 
 	void print_queue() {
 		size_t size = queue.size();
+		list<int>::const_iterator iter = queue.cbegin();
+		list<int>::const_iterator iter_end = queue.cend();
+
 		cout << "Input Queue:[";
-		for (size_t i = 0; i < size; i++)
-			cout << queue[i] << " ";
+		while (iter != iter_end) {
+			cout << *iter << " ";
+			iter++;
+		}
 		cout << "]" << endl;
 	}
 
