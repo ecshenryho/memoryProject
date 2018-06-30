@@ -86,7 +86,7 @@ public:
 				file >> block_size;
 				memory_needed.push_back(block_size);
 			}
-			process_list.push_back(Process(pid, a_time, run_time, memory_needed));
+			process_list.push_back(new_process);
 	
 			k = process_list.size() - 1; //Hash of PID
 			pair<bool, int> temp(true, k);
