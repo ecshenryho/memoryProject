@@ -50,11 +50,11 @@ class Simulation{
 public:
     Simulation(int mem_size, int size){
         capacity = mem_size;
-		if (size == 1) page_size = 100;
-		else if (size == 2) page_size = 200;
-		else page_size = 400;
-		free_pages = capacity / page_size;
-		memory_map = vector<int>(-1, free_pages);
+	memory_map = vector<int>(-1, free_pages);
+	if (size == 1) page_size = 100;
+	else if (size == 2) page_size = 200;
+	else page_size = 400;
+	free_pages = capacity / page_size;
     }
 
 	bool read_file(const string& path) {
@@ -112,7 +112,7 @@ public:
 			if (t == events.begin()->first) {//check if any events at time t
 				cout << "t = " << t << ": ";
 				while (events.begin()->second.size() != 0) { // run through all events
-					pair<bool, int> action = events.begin()->second.front(); // pointer to list
+					pair<bool, int> action = events.begin()->second.front(); // pointer to first elem in list
 					if (action.first)  // if true, enqueue
 						enqueue(action.second);
 					else //if false terminate process
@@ -147,7 +147,7 @@ public:
 					cout << (i + 1) * 100 << " - " << (i + 1) * 100 + 99 <<
 					": Process " << memory_map[i] << ", Page" << i + 1 << endl;
 			}
-			else
+			else // if page is empty loop til we find a filled page
 				start = i;
 		}
 		cout << endl;
@@ -190,7 +190,6 @@ int main(){
     cin >> page_size;
 	if (page_size < 1 || page_size > 3)
 		cout << "Out of bounds"; // DO EXCEPTION LATER;
-    
     
     Simulation sim(mem_size, page_size);
 	if (!sim.read_file("in1.txt"))
