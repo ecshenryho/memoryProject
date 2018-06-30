@@ -42,7 +42,7 @@ t = 100: Process 3 arrives
                  1000-1099: Process 3, Page 1 
                  1100-1199: Process 3, Page 2 
                  1200-1299: Process 3, Page 3  
-                 1300-1999: Free frame(s)         
+                 1300-1999: Free frame(s)	         
        MM moves Process 4 to memory
        Input Queue:[]
        Memory Map: 0-99: Process 1, Page 1 
