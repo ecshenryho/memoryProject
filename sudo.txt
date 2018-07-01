@@ -1,0 +1,228 @@
+class Process 
+public:
+	Process(int pid_, int a_time, int run_time_,
+		const vector<int>& memory_needed) {
+		pid = pid_;
+		arrival_time = a_time;
+		run_time = run_time_;
+		memory_chunks = memory_needed;
+	}
+
+	int pages_needed(int page_size) const {
+		compute sum of total memory needed
+		take ceiling of sum
+		return sum 
+	}
+
+	This implemation of MM only knows a page is being used by a PID, 
+	but not what page number it is relative to the process
+	int find_page(int m) {
+		Get total pages used by process
+		Loop through pages until page is found
+			return page number
+		return -1 if not found
+	}
+
+	int turnaroundTime() const {
+		return completion_time - arrival_time;
+	}
+
+	~Process() {}
+private:
+	int pid,
+		arrival_time,
+		run_time,
+		completion_time;
+	vector<int> memory_chunks; // memory amounts requested by process
+	vector<int>pages_used; // pages memory in memory_map process is using
+	friend class Simulation;
+};
+
+class Simulation {
+public:
+	Simulation(int mem_size, int size) {
+		capacity = mem_size;
+    determine page size based on user flag
+		calculate number of pages available
+		init all values in memory_map to unused, or -1
+	}
+
+	bool read_file(const string& path) {
+		ifstream file(path);
+		if (!file.is_open()) {
+			cout << "Can not open the file: " << path << endl;
+			return false;
+		}
+
+		int k, pid, a_time, run_time, count, n, n_piece, c;
+
+		file >> count;
+		for (int i = 0; i < count; i++) {
+			file >> pid;
+			file >> a_time;
+			file >> run_time;
+			file >> n_piece;
+			vector<int> memory_needed;
+			c = 0;
+			while (c < n_piece) {
+				file >> n;
+				memory_needed.push_back(n);
+				c++;
+			}
+
+			process_list.push_back(Process(pid, a_time, run_time, memory_needed)); 
+			k = process_list.size() - 1; //Hash of PID
+			add_event(k, a_time, true);
+		}
+
+		file.close();
+		file.clear();
+		return true;
+	}
+
+	void add_event(Process k, int t, bool action) { //true (add) / false (remove)
+		pair<bool, int> temp(action, k);
+		list<pair<bool, int>> a = { temp }; //set up data to be added to mao
+
+    Insert event into event table at time t with event flag[bool true(enqueue) / false(process is finsihed exe)]
+		if there is already an event at time t, append to excisting list of events
+		}
+
+	void MM_add(Process k, int time) {
+		cout << "MM moves Process " << k + 1 << " to memory" << endl;
+		size_t size = process_list[k].pages_needed(page_size);
+		free_pages -= size;
+		int i = 0;
+
+		while process k requires pages
+	  	check if page is unused / free
+				  assign page to k
+          record page use in process
+          decrement pages needed by process k
+			}
+			if page is not free check next page
+		}
+		 add event to free memory when process is complete
+	}
+
+	void MM_remove(Process k, int t) {
+		cout << "Process " << k + 1 << " completes" << endl;
+		record completion time in process
+		get number of pages used by k
+    loop through pages used by k
+			free page
+		free_pages += size;
+		print_mem();
+	}
+
+	void enqueue(int k) {
+		cout << "Process " << k + 1 << " arrives" << endl;
+		queue.push_back(k);
+		print_queue();
+	}
+
+	void load_from_queue(int t) {
+		list<int>::iterator iter = queue.begin();
+		while (iter != queue.end()) {
+			if enough space to send to MM, else, check next process
+				send process to MM 
+				Remove process from queue
+				print_queue();
+				print_mem();
+			}
+			else
+				++iter;
+		}
+	}
+
+	void virtual_clock() {
+		int t = 0;
+		loop until there are no events left or time out
+			check for events at time t 
+				output time
+				loop through all events
+					Get first event of the list
+					if bool is true
+						enqueue process k
+					else process is finished
+						Call MM to free up memory used by k
+					Go to next event
+				clear events for time t
+        
+			Load processes from queue
+			t += 100;
+	}
+
+	void print_mem() {
+		Get size of memory map 
+		int start, tail;
+		cout << "Memory Map:" << endl;
+		for (size_t i = 0; i < mem_size; i++) { // iterate though each memory cell
+			if (memory_map[i] != -1) { // if not empty
+				cout << i * page_size << " - " << i * page_size + page_size -1 << //compute address space of page
+					": Process " << memory_map[i] + 1 << ", Page " << //unhash PID from process list
+					process_list[memory_map[i]].find_page(i) << endl; //get page number from process
+			}
+			else { // if page is empty loop til we find a filled page
+				start = i;
+				tail = i;
+				while (i < mem_size && memory_map[i] == -1) {
+					tail = i;
+					i++;
+				}
+				i--;
+				cout << (start) * page_size << " - " << (tail) * page_size + page_size - 1 << ": Free frame(s)" << endl;
+			}
+		}
+		cout << endl;
+	}
+
+	void print_queue() {//iterate through queue and print
+		size_t size = queue.size();
+		list<int>::const_iterator iter = queue.cbegin();
+		list<int>::const_iterator iter_end = queue.cend();
+		cout << "Input Queue:[ ";
+		while (iter != iter_end) {
+			cout << *iter + 1 << " ";
+			iter++;
+		}
+		cout << "]" << endl;
+	}
+
+	void turn_around_time() {
+		loops through process list and gathers turn around time for each vector, then averages
+		
+		cout << "Average Turnaround Time: " << sum / size;
+	}
+
+	~Simulation() {}
+
+private:
+	vector<int> memory_map; 
+	list<int> queue; 
+	vector<Process> process_list; // hash table containing processes
+	map<int, list<pair<bool, int>>> events; Hash table of events that happen at a given time T
+											then a list of events, true = process arrives, false = process is done, PID relative to process_list
+	int free_pages;
+	int capacity;
+	int page_size; // If you see var k, means hash of PID in index k of process_list
+};
+
+int main() {
+	int mem_size, page_size;
+	cout << "Enter memory size: ";
+	cin >> mem_size;
+	cout << endl << "Enter page size: (1:100, 2:200, 3:400)";
+	cin >> page_size;
+	if (page_size < 1 || page_size > 3)
+		cout << "Out of bounds";
+
+	Simulation sim(mem_size, page_size); 
+	if (!sim.read_file("in1.txt"))
+		cout << "Cant read file"; 
+
+	sim.virtual_clock(); 
+	sim.turn_around_time();
+
+	return 0;
+}
