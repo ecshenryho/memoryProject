@@ -1,7 +1,7 @@
 target: 	simulation
 
 
-sender:		simulation.o
+simulation:		simulation.o
 		g++ -m64 -std=c++11 -Wall -o simulation simulation.o
 
 simulation.o: 	simulation.cpp
