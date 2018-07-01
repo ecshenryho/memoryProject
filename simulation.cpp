@@ -21,7 +21,7 @@ public:
 		for (size_t i = 0; i < memory_chunks.size(); i++) {
 			sum += memory_chunks[i];
 		}
-		if (memory_chunks[i] % page_size != 0) sum +=100;
+		if(sum % page_size != 0) sum +=100;
 		return sum/page_size;
 	}
 
@@ -107,7 +107,7 @@ public:
 		return true;
 	}
 
-	void MM_add(int k) {
+	void MM_add(int k, int time) {
 		cout << "MM moves Process " << k + 1 << " to memory" << endl;
 		size_t size = process_list[k].pages_needed(page_size);
 		free_pages -= size;
@@ -125,7 +125,7 @@ public:
 			list<pair<bool, int>> a = { temp };
 
 			pair<map<int, list<pair<bool, int>>>::iterator, bool> mem
-				= events.insert(pair<int, list<pair<bool, int>>>(a_time, a));
+				= events.insert(pair<int, list<pair<bool, int>>>(time, a));
 			if (!mem.second) // returns false if eleme already excists
 				mem.first->second.push_back(temp);
 
@@ -162,7 +162,7 @@ public:
 			list<int>::iterator iter = queue.begin(); // check queue
 			while (iter != queue.end()) {
 				if (process_list[*iter].pages_needed(page_size) <= free_pages) { //if enough space add to mem, if not check next
-					MM_add(*iter);
+					MM_add(*iter, t );
 					++iter;
 					queue.pop_front();
 					print_queue();
@@ -243,7 +243,7 @@ int main() {
 		cout << "Out of bounds"; // DO EXCEPTION LATER;
 
 	Simulation sim(mem_size, page_size);
-	if (!sim.read_file("in1.txt"))"
+	if (!sim.read_file("in1.txt"))
 		cout << "Cant read file"; // DO EXCEPTION LATER;
 	sim.virtual_clock();
 	sim.turn_around_time();
