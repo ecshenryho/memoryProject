@@ -33,8 +33,17 @@ III.How to execute:
 				./simulation
 			5.check the out1.txt, out2.txt, out3.txt and compare to the 
 			  console output. They should give the same results.
-
-IV.Collaboration: 
+IV. p2-hhenry.tar contains:
+	1.designChart.pdf
+	2.int1.txt
+	3.out1.txt
+	4.out2.txt
+	5.out3.txt
+	6.Makefile
+	7.README
+	8.seudoCode.txt
+	9.simulation.cpp
+V.Collaboration: 
 
 	We don't separate the work for each team member, instead we sat down and did the coding 	
 	together, step by step. We went over each fucntion that we used and try to understand 		
