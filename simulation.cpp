@@ -19,10 +19,10 @@ public:
 	int pages_needed(int page_size) const {
 		int sum = 0;
 		for (size_t i = 0; i < memory_chunks.size(); i++) {
-			sum += memory_chunks[i] / page_size;
-			if (memory_chunks[i] % page_size != 0) sum++;
+			sum += memory_chunks[i];
 		}
-		return sum;
+		if (memory_chunks[i] % page_size != 0) sum +=100;
+		return sum/page_size;
 	}
 
 	int find_page(int m) {
@@ -243,7 +243,7 @@ int main() {
 		cout << "Out of bounds"; // DO EXCEPTION LATER;
 
 	Simulation sim(mem_size, page_size);
-	if (!sim.read_file("in1.txt"))
+	if (!sim.read_file("in1.txt"))"
 		cout << "Cant read file"; // DO EXCEPTION LATER;
 	sim.virtual_clock();
 	sim.turn_around_time();
