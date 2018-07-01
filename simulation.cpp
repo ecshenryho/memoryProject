@@ -4,7 +4,6 @@
 #include<vector>
 #include<list>
 #include <map>
-#include <stack>
 using namespace std;
 
 class Process {
@@ -17,16 +16,24 @@ public:
 		memory_chunks = memory_needed;
 	}
 
-	int pages_needed(int page_size) {
+	int pages_needed(int page_size) const {
 		int sum = 0;
 		for (size_t i = 0; i < memory_chunks.size(); i++) {
-			sum += memory_chunks[i] % page_size;
+			sum += memory_chunks[i] / page_size;
 			if (memory_chunks[i] % page_size != 0) sum++;
 		}
 		return sum;
 	}
 
-	int turnaroundTime() {
+	int find_page(int m) {
+		size_t size = pages_used.size();
+		for(size_t i = 0; i < size; i++)
+			if (pages_used[i] == m)
+				return i + 1;
+		return -1;
+	}
+
+	int turnaroundTime() const {
 		return completion_time - arrival_time;
 	}
 
@@ -52,11 +59,12 @@ class Simulation {
 public:
 	Simulation(int mem_size, int size) {
 		capacity = mem_size;
-		memory_map = vector<int>(free_pages, -1);
 		if (size == 1) page_size = 100;
 		else if (size == 2) page_size = 200;
 		else page_size = 400;
 		free_pages = capacity / page_size;
+		memory_map = vector<int>(free_pages, -1);
+
 	}
 
 	bool read_file(const string& path) {
@@ -67,7 +75,7 @@ public:
 		}
 
 		int k, pid, a_time, run_time, count, n, n_piece, c;
-		vector<int> memory_needed;
+		
 
 		file >> count;
 		for (int i = 0; i < count; i++) {
@@ -75,7 +83,7 @@ public:
 			file >> a_time;
 			file >> run_time;
 			file >> n_piece;
-
+			vector<int> memory_needed;
 			c = 0;
 			while (c < n_piece) {
 				file >> n;
@@ -100,7 +108,7 @@ public:
 	}
 
 	void MM_add(int k) {
-		cout << "MM moves Process " << k << " to memory" << endl;
+		cout << "MM moves Process " << k + 1 << " to memory" << endl;
 		size_t size = process_list[k].pages_needed(page_size);
 		free_pages -= size;
 		int i = 0;
@@ -108,24 +116,25 @@ public:
 		while (size > 0) {
 			if (memory_map[i] == -1) {// if page is free else check next page
 				memory_map[i] = k;
+				process_list[k].pages_used.push_back(i);
 				size--;
 			}
 			i++;
 		}
 
-		print_queue();
-		print_mem();
+		//add to remove queue
+
 	}
 	void MM_remove(int k) {
-		cout << "Process " << k << " completes" << endl;
-		size_t size = process_list[k].memory_chunks.size();
+		cout << "Process " << k+1 << " completes" << endl;
+		size_t size = process_list[k].pages_used.size();
 		for (size_t i = 0; i < size; i++)
-			memory_map[process_list[k].memory_chunks[i]] = -1;
+			memory_map[process_list[k].pages_used[i]] = -1;
 		free_pages += size;
 		print_mem();
 	}
 	void enqueue(int k) {
-		cout << "Process " << k << " arrives" << endl;
+		cout << "Process " << k+1 << " arrives" << endl;
 		queue.push_back(k);
 		print_queue();
 	}
@@ -151,6 +160,8 @@ public:
 					MM_add(*iter);
 					++iter;
 					queue.pop_front();
+					print_queue();
+					print_mem();
 				}
 				else
 				++iter;
@@ -161,20 +172,24 @@ public:
 
 	void print_mem() {
 		size_t mem_size = memory_map.size();
-		int start;
-		cout << "Memory Map:";
+		int start, tail;
+		cout << "Memory Map:" << endl;
 		for (size_t i = 0; i < mem_size; i++) {
 			if (memory_map[i] != -1) {
-				if (start != -1) {
-					cout << (start + 1) * 100 << " - " << (i + 1) * 100 + 99 << ": Free frame(s)" << endl;
-					start = -1;
-				}
-				else
-					cout << (i + 1) * 100 << " - " << (i + 1) * 100 + 99 <<
-					": Process " << memory_map[i] << ", Page" << i + 1 << endl;
+				cout << i * 100 << " - " << i * 100 + 99 <<
+					": Process " << memory_map[i] + 1 << ", Page " << 
+					process_list[memory_map[i]].find_page(i) << endl;
 			}
-			else // if page is empty loop til we find a filled page
+			else { // if page is empty loop til we find a filled page
 				start = i;
+				tail = i;
+				while (i < mem_size && memory_map[i] == -1) {
+					tail = i;
+					i++;
+				}
+				i--;
+				cout << (start) * 100 << " - " << (tail) * 100 + 99 << ": Free frame(s)" << endl;
+			}
 		}
 		cout << endl;
 	}
@@ -184,9 +199,9 @@ public:
 		list<int>::const_iterator iter = queue.cbegin();
 		list<int>::const_iterator iter_end = queue.cend();
 
-		cout << "Input Queue:[";
+		cout << "Input Queue:[ ";
 		while (iter != iter_end) {
-			cout << *iter << " ";
+			cout << *iter + 1 << " ";
 			iter++;
 		}
 		cout << "]" << endl;
