@@ -21,13 +21,13 @@ public:
 		for (size_t i = 0; i < memory_chunks.size(); i++) {
 			sum += memory_chunks[i];
 		}
-		if(sum % page_size != 0) sum +=100;
-		return sum/page_size;
+		if (sum % page_size != 0) sum += page_size;
+		return sum / page_size;
 	}
 
 	int find_page(int m) {
 		size_t size = pages_used.size();
-		for(size_t i = 0; i < size; i++)
+		for (size_t i = 0; i < size; i++)
 			if (pages_used[i] == m)
 				return i + 1;
 		return -1;
@@ -35,13 +35,6 @@ public:
 
 	int turnaroundTime() const {
 		return completion_time - arrival_time;
-	}
-
-	int total_memory() { // might not need
-		int sum = 0;
-		for (size_t i = 0; i < memory_chunks.size(); i++)
-			sum += memory_chunks[i];
-		return sum;
 	}
 
 	~Process() {}
@@ -64,7 +57,6 @@ public:
 		else page_size = 400;
 		free_pages = capacity / page_size;
 		memory_map = vector<int>(free_pages, -1);
-
 	}
 
 	bool read_file(const string& path) {
@@ -75,7 +67,6 @@ public:
 		}
 
 		int k, pid, a_time, run_time, count, n, n_piece, c;
-		
 
 		file >> count;
 		for (int i = 0; i < count; i++) {
@@ -93,18 +84,22 @@ public:
 
 			process_list.push_back(Process(pid, a_time, run_time, memory_needed));
 			k = process_list.size() - 1; //Hash of PID
-			pair<bool, int> temp(true, k);
-			list<pair<bool, int>> a = { temp };
-
-			pair<map<int, list<pair<bool, int>>>::iterator, bool> mem
-				= events.insert(pair<int, list<pair<bool, int>>>(a_time, a));
-			if (!mem.second) // returns false if eleme already excists
-				mem.first->second.push_back(temp);
+			add_event(k, a_time, true);
 		}
 
 		file.close();
 		file.clear();
 		return true;
+	}
+
+	void add_event(int k, int t, bool action) { //true (add) / false (remove)
+		pair<bool, int> temp(action, k);
+		list<pair<bool, int>> a = { temp };
+
+		pair<map<int, list<pair<bool, int>>>::iterator, bool> mem
+			= events.insert(pair<int, list<pair<bool, int>>>(t, a));
+		if (!mem.second) 
+			mem.first->second.push_back(temp);
 	}
 
 	void MM_add(int k, int time) {
@@ -121,27 +116,37 @@ public:
 			}
 			i++;
 		}
-		pair<bool, int> temp(false, k);
-			list<pair<bool, int>> a = { temp };
-
-			pair<map<int, list<pair<bool, int>>>::iterator, bool> mem
-				= events.insert(pair<int, list<pair<bool, int>>>(time, a));
-			if (!mem.second) // returns false if eleme already excists
-				mem.first->second.push_back(temp);
-
+		add_event(k, time + process_list[k].run_time, false);
 	}
-	void MM_remove(int k) {
-		cout << "Process " << k+1 << " completes" << endl;
+
+	void MM_remove(int k, int t) {
+		cout << "Process " << k + 1 << " completes" << endl;
+		process_list[k].completion_time = t;
 		size_t size = process_list[k].pages_used.size();
 		for (size_t i = 0; i < size; i++)
 			memory_map[process_list[k].pages_used[i]] = -1;
 		free_pages += size;
 		print_mem();
 	}
+
 	void enqueue(int k) {
-		cout << "Process " << k+1 << " arrives" << endl;
+		cout << "Process " << k + 1 << " arrives" << endl;
 		queue.push_back(k);
 		print_queue();
+	}
+
+	void load_from_queue(int t) {
+		list<int>::iterator iter = queue.begin(); // check queue
+		while (iter != queue.end()) {
+			if (process_list[*iter].pages_needed(page_size) <= free_pages) { //if enough space add to mem, if not check next
+				MM_add(*iter, t);
+				iter = queue.erase(iter);
+				print_queue();
+				print_mem();
+			}
+			else
+				++iter;
+		}
 	}
 
 	void virtual_clock() {
@@ -154,23 +159,12 @@ public:
 					if (action.first)  // if true, enqueue
 						enqueue(action.second);
 					else //if false terminate process
-						MM_remove(action.second);
+						MM_remove(action.second, t);
 					events.begin()->second.pop_front();// iterate, check if correct
 				}
 				events.erase(events.begin());
 			}
-			list<int>::iterator iter = queue.begin(); // check queue
-			while (iter != queue.end()) {
-				if (process_list[*iter].pages_needed(page_size) <= free_pages) { //if enough space add to mem, if not check next
-					MM_add(*iter, t );
-					++iter;
-					queue.pop_front();
-					print_queue();
-					print_mem();
-				}
-				else
-				++iter;
-			}
+			load_from_queue(t);
 			t += 100;
 		}
 	}
@@ -181,8 +175,8 @@ public:
 		cout << "Memory Map:" << endl;
 		for (size_t i = 0; i < mem_size; i++) {
 			if (memory_map[i] != -1) {
-				cout << i * 100 << " - " << i * 100 + 99 <<
-					": Process " << memory_map[i] + 1 << ", Page " << 
+				cout << i * page_size << " - " << i * page_size + page_size -1 <<
+					": Process " << memory_map[i] + 1 << ", Page " <<
 					process_list[memory_map[i]].find_page(i) << endl;
 			}
 			else { // if page is empty loop til we find a filled page
@@ -193,7 +187,7 @@ public:
 					i++;
 				}
 				i--;
-				cout << (start) * 100 << " - " << (tail) * 100 + 99 << ": Free frame(s)" << endl;
+				cout << (start) * page_size << " - " << (tail) * page_size + page_size - 1 << ": Free frame(s)" << endl;
 			}
 		}
 		cout << endl;
@@ -212,13 +206,13 @@ public:
 		cout << "]" << endl;
 	}
 
-	double turn_around_time() {
+	void turn_around_time() {
 		double sum = 0;
 		size_t size = process_list.size();
 		for (size_t i = 0; i < size; i++) {
 			sum += process_list[i].turnaroundTime();
 		}
-		return sum / size;
+		cout << "Average Turnaround Time: " << sum / size;
 	}
 
 	~Simulation() {}
@@ -240,11 +234,12 @@ int main() {
 	cout << endl << "Enter page size: (1:100, 2:200, 3:400)";
 	cin >> page_size;
 	if (page_size < 1 || page_size > 3)
-		cout << "Out of bounds"; // DO EXCEPTION LATER;
+		cout << "Out of bounds";
 
 	Simulation sim(mem_size, page_size);
 	if (!sim.read_file("in1.txt"))
-		cout << "Cant read file"; // DO EXCEPTION LATER;
+		cout << "Cant read file"; 
+
 	sim.virtual_clock();
 	sim.turn_around_time();
 
