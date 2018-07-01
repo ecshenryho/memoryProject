@@ -23,20 +23,28 @@ I.Group members:
 
 II.Program languages used: c++, recommend linux computer 64 bits architechure.
 
-III.Implemented the extra credit? No
 
-IV.How to execute:
+III.How to execute:
+			1.download the p2-hhenry.tar
+			2.extract the file.
+			3.open terminal inside the extracted directory
+			4.run each of these command and enter
+				make
+				./simulation
+			5.check the out1.txt, out2.txt, out3.txt and compare to the 
+			  console output. They should give the same results.
 
-
-VI.Collaboration: 
+IV.Collaboration: 
 
 	We don't separate the work for each team member, instead we sat down and did the coding 	
 	together, step by step. We went over each fucntion that we used and try to understand 		
 	them. We also explain what it does for everyone in our team, make sure everyone will 		
 	understand the problems and how all the functions work, understand the purpose of this 		
-	assignment.
+	assignment.We also used githup to finialize and code for the this project, because we have
+	time limited.
 
 
-VII.Special found.
+V.Special found.
 
+	This project should be given with more time to complete.
 	
