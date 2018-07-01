@@ -103,7 +103,7 @@ public:
 	}
 
 	void MM_add(int k, int time) {
-		cout << "MM moves Process " << k + 1 << " to memory" << endl;
+		cout << "\tMM moves Process " << k + 1 << " to memory" << endl<<"\t";
 		size_t size = process_list[k].pages_needed(page_size);
 		free_pages -= size;
 		int i = 0;
@@ -120,7 +120,7 @@ public:
 	}
 
 	void MM_remove(int k, int t) {
-		cout << "Process " << k + 1 << " completes" << endl;
+		cout << "Process " << k + 1 << " completes" << endl<<"\t";
 		process_list[k].completion_time = t;
 		size_t size = process_list[k].pages_used.size();
 		for (size_t i = 0; i < size; i++)
@@ -130,7 +130,7 @@ public:
 	}
 
 	void enqueue(int k) {
-		cout << "Process " << k + 1 << " arrives" << endl;
+		cout << "Process " << k + 1 << " arrives" << endl<<"\t";
 		queue.push_back(k);
 		print_queue();
 	}
@@ -172,12 +172,12 @@ public:
 	void print_mem() {
 		size_t mem_size = memory_map.size();
 		int start, tail;
-		cout << "Memory Map:" << endl;
+		cout << "Memory Map: ";
 		for (size_t i = 0; i < mem_size; i++) {
 			if (memory_map[i] != -1) {
 				cout << i * page_size << " - " << i * page_size + page_size -1 <<
 					": Process " << memory_map[i] + 1 << ", Page " <<
-					process_list[memory_map[i]].find_page(i) << endl;
+					process_list[memory_map[i]].find_page(i) << endl<<"\t\t";
 			}
 			else { // if page is empty loop til we find a filled page
 				start = i;
@@ -187,14 +187,13 @@ public:
 					i++;
 				}
 				i--;
-				cout << (start) * page_size << " - " << (tail) * page_size + page_size - 1 << ": Free frame(s)" << endl;
+				cout << (start) * page_size << " - " << (tail) * page_size + page_size - 1 << ": Free frame(s)" << endl<<"\t\t";
 			}
 		}
-		cout << endl;
+		cout<<endl;
 	}
 
 	void print_queue() {
-		size_t size = queue.size();
 		list<int>::const_iterator iter = queue.cbegin();
 		list<int>::const_iterator iter_end = queue.cend();
 
@@ -203,7 +202,7 @@ public:
 			cout << *iter + 1 << " ";
 			iter++;
 		}
-		cout << "]" << endl;
+		cout << "]" << endl<<"\t";
 	}
 
 	void turn_around_time() {
@@ -212,7 +211,7 @@ public:
 		for (size_t i = 0; i < size; i++) {
 			sum += process_list[i].turnaroundTime();
 		}
-		cout << "Average Turnaround Time: " << sum / size;
+		cout << "Average Turnaround Time: " << sum / size<<endl;
 	}
 
 	~Simulation() {}
