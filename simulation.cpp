@@ -121,8 +121,13 @@ public:
 			}
 			i++;
 		}
+		pair<bool, int> temp(false, k);
+			list<pair<bool, int>> a = { temp };
 
-		//add to remove queue
+			pair<map<int, list<pair<bool, int>>>::iterator, bool> mem
+				= events.insert(pair<int, list<pair<bool, int>>>(a_time, a));
+			if (!mem.second) // returns false if eleme already excists
+				mem.first->second.push_back(temp);
 
 	}
 	void MM_remove(int k) {
